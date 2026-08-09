@@ -1,23 +1,109 @@
 # UGC video scripts
 
-Six scripts, each mapped to an angle from `01-angles-and-hooks.md` and an avatar from
-`02-avatars.md`.
+Seis roteiros, cada um ligado a um ângulo de `01-angles-and-hooks.md` e a um avatar de
+`02-avatars.md`. Os payloads prontos da API estão em `05-arcads-prompts.md`.
 
-## Model routing
+> **Contrato da API conferido** contra `skills/arcads-external-api/reference.md`. Três achados
+> mudam o plano de produção — leia antes de gerar qualquer coisa.
 
-| Need | Model | Why |
+---
+
+## Achado 1 — o `startFrame` do Veo 3.1 está quebrado
+
+`reference.md` (regressão confirmada em 2026-04-09) registra que a entrada de imagem pelo
+endpoint v2 retorna **HTTP 500** em quase todos os modelos:
+
+| Modelo | Modo de imagem | Resultado |
 |---|---|---|
-| Animate an approved avatar still | **Veo 3.1** with `startFrame` | Only route that preserves the face. ~8s, auto-length, 720p default |
-| Talking-head longer than ~8s | **Veo 3.1** ×2 stitched, or **Seedance 2** | Sora 2's `refImageAsBase64` is style-only and will not hold the face |
-| No specific face needed (b-roll, hands, phone) | **Sora 2** | Up to 20s, text-only prompting is fine here |
-| Scene/product beats | `POST /v1/scene` | ~75s turnaround, returns a `.jpg` thumbnail too |
+| `veo31` | `startFrame` | ❌ 500 |
+| `sora2` | `referenceImages` | ❌ 500 |
+| `grok-video` | `startFrame` | ❌ 500 |
+| `kling-3.0` | `startFrame` | ✅ funciona |
+| `seedance-2.0` | `referenceImages` | ✅ funciona |
 
-**Never** use Sora 2 to animate a specific avatar. It does not preserve identity — the ad will
-come back with a different person than your approved still.
+Ou seja: o fluxo "gera o still, aprova, anima no Veo com `startFrame`" **não roda hoje**. Só
+existem dois caminhos para travar o rosto do avatar:
 
-## Mandatory prompt blocks
+- **`seedance-2.0`** com `referenceImages` — fala, áudio, 4–15s. **Único caminho com voz.**
+- **`kling-3.0`** com `startFrame` — **mudo**, sem fala nenhuma.
 
-Every video prompt below assumes these are appended:
+Como todo roteiro aqui tem diálogo, **Seedance 2.0 é o único caminho viável** para os vídeos
+com rosto consistente. Rode uma sonda de sanidade por modelo no início da sessão: a regressão
+pode ter caído desde a última validação do repo.
+
+## Achado 2 — Seedance 2.0 custa ~48 créditos/segundo
+
+`reference.md` linha 141, revalidado em 2026-05-19 sobre 8 execuções de produção:
+
+| Duração | Créditos estimados |
+|---|---|
+| 8s | ~384 |
+| 10s | ~480 |
+| 12s | ~576 |
+| 15s | **~720** |
+
+Áudio ligado **não** muda o preço. Compare com os outros:
+
+| Modelo | 15s aprox. | Fala? |
+|---|---|---|
+| Grok Video | ~0,41 | ❌ |
+| Kling 3.0 | ~0,7 | ❌ |
+| Veo 3.1 (auto ~8s) | 1,0 fixo | ✅ |
+| **Seedance 2.0 i2v** | **~720** | ✅ |
+
+Não é erro de digitação — são três ordens de grandeza. Uma tabela mais antiga no mesmo arquivo
+(linha 177) ainda diz "0,06/seg"; a nota de maio corrige explicitamente esse número e diz que
+o `MASTER_CONTEXT.md` estava certo o tempo todo. **Use ~48/seg e confirme na plataforma
+Arcads antes de disparar** — a skill exige mostrar o custo estimado e esperar confirmação.
+
+Consequência prática: um único UGC de 15s com rosto travado custa mais que centenas de
+imagens estáticas (Nano Banana ≈ 0,03). **Valide o ângulo em estático antes de gastar em
+vídeo.**
+
+## Achado 3 — Seedance cobra antes do content checker
+
+Créditos são debitados **no create**, antes da checagem de conteúdo. Se o prompt for
+sinalizado, o asset vira `failed` e **os créditos não voltam**. Numa oferta de aparência isso
+é risco real: nada de linguagem sobre defeito facial, correção, ou comparação antes/depois nos
+prompts. Se der `failed` na primeira, **não repita o mesmo payload** — suavize o texto antes.
+
+## Armadilha de polling
+
+Seedance 2.0 é criado em `/v2/videos/generate` mas **vive na família de assets**. Polling em
+`GET /v1/videos/{id}` devolve **404**. Use `GET /v1/assets/{id}` e leia `status`. O mp4 final
+sai no campo `url` do asset.
+
+## Uploads presignados são de uso único
+
+Um `filePath` funciona **uma vez**. Reusar devolve `400 REFERENCE_FILE_NOT_FOUND`. Para
+ancorar o mesmo hero still em vários clipes, **refaça o upload antes de cada chamada**.
+
+---
+
+## Roteamento final
+
+| Necessidade | Modelo | Observação |
+|---|---|---|
+| Talking head com rosto travado | **`seedance-2.0`** + `referenceImages` + `audioEnabled: true` | Único caminho com voz. ~48 cr/s |
+| Voz sem rosto específico (locução, mãos, tela) | **`veo31`** texto puro | 1,0 crédito fixo, ~8s, ~67s de geração |
+| Locução mais longa sem rosto | **`sora2`** texto puro | até 20s, ~0,05/s |
+| B-roll mudo com still ancorado | **`kling-3.0`** + `startFrame` | 15s = 0,7 crédito, mudo |
+| Still de personagem / anúncio estático | `POST /v2/images/generate`, `nano-banana-2` | ~0,03, ~35s |
+
+Seedance **não aceita** `startFrame` — a imagem entra por `referenceImages` (máx. 3). E
+`referenceImages` + `referenceVideos` na mesma chamada dá 500: escolha um modo.
+
+**Aspect ratio:** Seedance só aceita `9:16` e `16:9`. Não há `1:1` em vídeo.
+
+---
+
+## Orçamento de fala por clipe
+
+~2,5 palavras/segundo. Seedance vai até 15s, então **o teto é ~35 palavras por clipe**. Os
+roteiros abaixo já vêm quebrados em beats que cabem — cada beat é uma chamada de API separada,
+depois costurada com `ffmpeg`.
+
+Blocos obrigatórios em todo prompt de vídeo:
 
 ```
 No subtitles, no captions, no text overlays.
@@ -28,142 +114,144 @@ Skin: visible pores, slight unevenness in skin tone, minor undereye shadows,
 hint of shine from natural oils.
 ```
 
-Plus 3–4 human motion cues per prompt, or the subject reads as a mannequin. Examples that suit
-this category: breaking eye contact to look down at the phone, tilting the head while thinking,
-shifting weight against the counter, adjusting grip on the phone, brief half-smile before
-continuing.
-
-Captions get burned in afterward via the `caption-video` skill — not by the model.
+Mais 3–4 marcações de movimento humano por prompt, ou o sujeito vira manequim.
 
 ---
 
-## V1 — "A reunião" (Angle 1, avatar A1 Rafael)
+## V1 — "A reunião" (Ângulo 1, avatar A1 Rafael)
 
-Format: talking head, ~15s, two Veo clips stitched. Meeting-room b-roll optional.
+Dois clipes Seedance de 12s. ~28 palavras cada. Custo estimado: **~1.152 créditos**.
 
-> **[0–3s, hook]** Ontem eu falei numa reunião e a conversa continuou como se eu não tivesse
-> falado. Já aconteceu com você?
->
-> **[3–9s]** Não é que eu seja ignorado. É que ninguém repara. E eu não sabia nem o que fazer
-> com isso, porque quando eu pergunto pros outros, ninguém responde de verdade.
->
-> **[9–15s, CTA]** Achei um app que analisa duas selfies suas e te devolve um relatório com o
-> que dá pra aprimorar e em que ordem. Doze minutos. Link aqui embaixo.
+**Beat 1 — [HOOK] (12s, ~27 palavras)**
 
-Shot: seated, medium close, office or home in soft background blur. Motion cues: glances off
-camera on "ninguém repara", small shrug, leans in on the CTA.
+> Ontem eu falei numa reunião inteira. A conversa continuou como se eu não tivesse falado.
+> Não é que me ignoram. É que ninguém repara.
 
----
+**Beat 2 — [CTA] (12s, ~29 palavras)**
 
-## V2 — "Cegueira da Harmonia" (Angle 2, avatar A3 Marcelo)
+> Achei um app que analisa duas selfies e devolve um relatório com o que dá pra aprimorar e em
+> que ordem. Doze minutos. Link aqui embaixo.
 
-Format: talking head, ~12s. The highest-credibility read of the mechanism.
-
-> **[0–3s, hook]** Existe um nome pro motivo de você não conseguir olhar pro próprio rosto:
-> Cegueira da Harmonia.
->
-> **[3–8s]** Você convive com esse rosto há 30 anos. Perdeu completamente a capacidade de ver
-> ele de fora. Por isso o espelho não ajuda e a opinião dos outros também não.
->
-> **[8–12s, CTA]** Esse app te dá o olhar de fora. Duas fotos, doze minutos, plano de ação.
-
-Shot: kitchen counter, morning light, leaning. Motion cues: gestures once on "de fora", head
-tilt on the mechanism name, breaks eye contact mid-sentence.
+Cena: sentado, plano médio, escritório desfocado ao fundo. Movimento: desvia o olhar em
+"ninguém repara", pequeno dar de ombros, inclina pra frente no CTA.
 
 ---
 
-## V3 — "Oito meses de mewing" (Angle 3, avatar A2 Diego)
+## V2 — "Cegueira da Harmonia" (Ângulo 2, avatar A3 Marcelo)
 
-Format: bathroom-mirror selfie UGC, ~15s. Highest-intent script in the set.
+Dois clipes de 11s. Custo estimado: **~1.056 créditos**.
 
-> **[0–3s, hook]** Oito meses fazendo mewing. Quer saber o que eu consigo te falar sobre o
-> resultado? Nada.
->
-> **[3–10s]** Sério. Eu não tenho como saber se funcionou, se eu tava fazendo certo, nem se
-> era pro meu tipo de rosto. Eu tava seguindo vídeo de gringo aleatório.
->
-> **[10–15s, CTA]** Aí eu fiz uma análise de verdade. Mandei duas selfies, respondi umas
-> perguntas, e recebi um plano que faz sentido pro meu rosto. Com um checklist pra eu medir.
+**Beat 1 — [HOOK] (11s, ~25 palavras)**
 
-Shot: phone held in hand, bathroom mirror, morning. **Direction note:** he is annoyed at the
-wasted time, never at his face. Do not let the model examine his reflection critically — that
-frames the ad as a defect callout. Motion cues: phone hand shifts, looks away on "nada", small
-laugh on "vídeo de gringo aleatório".
+> Existe um nome pro motivo de você não conseguir olhar pro próprio rosto. Chama Cegueira da
+> Harmonia. Você convive com esse rosto há trinta anos.
 
----
+**Beat 2 — [MECANISMO + CTA] (11s, ~26 palavras)**
 
-## V4 — "A mentira educada" (Angle 4, avatar A1 Rafael)
+> Você perdeu a capacidade de ver ele de fora. Por isso o espelho não ajuda. Esse app dá o
+> olhar de fora em doze minutos.
 
-Format: car, parked, seatbelt on, ~12s. The most native UGC frame in this category.
-
-> **[0–4s, hook]** Você já pediu opinião sincera sobre a sua aparência e recebeu "você é bonito
-> do seu jeito"? Isso não é resposta.
->
-> **[4–9s]** Ninguém fala a verdade porque falar a verdade sobre a cara de alguém tem custo.
-> Então todo mundo se protege com resposta vaga.
->
-> **[9–12s, CTA]** Um relatório não tem esse problema. Doze minutos, sem julgamento e sem nota.
-
-Shot: driver's seat, parked, daylight through windshield. Motion cues: glances at rearview,
-adjusts posture, brief pause before the CTA line.
+Cena: bancada da cozinha, luz da manhã, apoiado. Movimento: gesto único em "de fora",
+inclinação de cabeça no nome do mecanismo, quebra de contato visual no meio da frase.
 
 ---
 
-## V5 — "Como funciona" (Angle 5, no face required)
+## V3 — "Oito meses de mewing" (Ângulo 3, avatar A2 Diego)
 
-Format: screen-and-hands walkthrough, ~20s. **Sora 2** is fine here — no identity to preserve.
+O de maior intenção. Dois clipes de 12s. Custo estimado: **~1.152 créditos**.
 
-> **[0–4s]** Duas selfies. Qualquer luz, nada profissional.
->
-> **[4–10s]** Um questionário de cinco minutos sobre como você se vê. É aí que o sistema
-> entende o seu caso.
->
-> **[10–16s]** Doze minutos depois, o relatório: o que ajustar, o que manter, e a ordem exata.
->
-> **[16–20s]** Não é curso, não é videoaula. É um app. R$47, com garantia de sete dias.
+**Beat 1 — [HOOK] (12s, ~28 palavras)**
 
-Shot: overhead and over-shoulder of hands on a phone, desk, daylight. Voiceover only, no face.
-This is the script most likely to survive as an evergreen — it makes no emotional claim, so it
-carries less policy risk and less creative fatigue.
+> Oito meses fazendo mewing. Sabe o que eu consigo te falar sobre o resultado? Nada. Eu tava
+> seguindo vídeo de gringo aleatório, sem saber se servia pro meu rosto.
 
----
+**Beat 2 — [CTA] (12s, ~27 palavras)**
 
-## V6 — "10 anos de consultório" (Angle 6, no AI face)
+> Aí eu fiz uma análise de verdade. Mandei duas selfies, respondi umas perguntas, e recebi um
+> plano que faz sentido. Com checklist pra medir.
 
-Format: voiceover over b-roll, ~15s. No face on screen — see the Dr Marcos Gama rule in
-`02-avatars.md`.
-
-> **[0–4s]** Dez anos fazendo harmonização facial e análise de simetria.
->
-> **[4–10s]** No consultório era sempre o mesmo padrão: cara jovem, perdido em informação
-> contraditória da internet, tentando coisa aleatória sem saber se servia pra ele.
->
-> **[10–15s]** Então ele pegou os critérios da prática clínica e transformou num sistema que
-> funciona sem agendar consulta.
-
-Shot: b-roll — clinic-adjacent but non-identifying (notebook, pen, hands, window light). Never
-patient photography. If you have cleared footage of Dr Gama himself, use that instead of
-generated b-roll; it will outperform.
+Cena: celular na mão, espelho do banheiro, manhã. **Direção:** ele está irritado com o tempo
+perdido, nunca com o rosto. Não deixe o modelo examinar o próprio reflexo criticamente — isso
+transforma o anúncio em acusação de defeito e ainda aumenta o risco no content checker.
 
 ---
 
-## Production order
+## V4 — "A mentira educada" (Ângulo 4, avatar A1 Rafael)
 
-1. Build the four character sheets (`02-avatars.md`). Approve each hero before the 9 angles.
-2. Generate one still per script from the approved character sheet. **Approve the still.**
-3. Only then animate with Veo 3.1 using that still as `startFrame`.
-4. QA, then burn captions with the `caption-video` skill (needs `ffmpeg`, `whisper`, and
-   `npx hyperframes`).
-5. Publish via `meta-ad-builder`. Every ad it creates lands PAUSED — un-pause in Ads Manager.
+Dois clipes de 11s. Custo estimado: **~1.056 créditos**.
 
-V5 needs no avatar at all, so it is the fastest script to get into the account. Start there if
-you want a video live before the character sheets are built.
+**Beat 1 — [HOOK] (11s, ~26 palavras)**
 
-## Compliance re-check before publishing
+> Você já pediu opinião sincera sobre a sua aparência e ouviu "você é bonito do seu jeito"?
+> Isso não é resposta. É gentileza.
 
-- [ ] No before/after in any frame
-- [ ] No score or rating shown or spoken
-- [ ] No line asserting a flaw in the viewer
-- [ ] No guaranteed outcome or timeline for physical change
-- [ ] Burned-in captions match the spoken pt-BR, accents intact
-- [ ] No real patient or clinical photography
+**Beat 2 — [CTA] (11s, ~27 palavras)**
+
+> Ninguém fala a verdade porque falar tem custo. Um relatório não tem esse problema. Doze
+> minutos, sem julgamento e sem nota.
+
+Cena: banco do motorista, carro parado, luz do para-brisa. Movimento: olha o retrovisor,
+ajusta a postura, pausa breve antes do CTA.
+
+---
+
+## V5 — "Como funciona" (Ângulo 5, sem rosto)
+
+**Não precisa de avatar** → sai de Seedance e vai para **`sora2` texto puro, 20s**. Custo
+estimado: **~1,0 crédito**. É literalmente 1.000× mais barato que os roteiros com rosto.
+
+> Duas selfies. Qualquer luz, nada profissional. Um questionário de cinco minutos sobre como
+> você se vê. Doze minutos depois, o relatório: o que ajustar, o que manter, e a ordem exata.
+> Não é curso, não é videoaula. É um app. Quarenta e sete reais, com garantia de sete dias.
+
+(~48 palavras → 20s no enum do Sora 2.)
+
+Cena: plano aéreo e por cima do ombro, mãos no celular, mesa, luz do dia. Só locução.
+
+**Comece por aqui.** É o roteiro mais barato, o mais seguro no content checker (não faz
+nenhuma afirmação emocional) e o mais provável de durar como evergreen.
+
+---
+
+## V6 — "10 anos de consultório" (Ângulo 6, sem rosto de IA)
+
+`sora2` texto puro, 16s, locução sobre b-roll. Custo estimado: **~0,8 crédito**.
+
+> Dez anos fazendo harmonização facial e análise de simetria. No consultório era sempre o
+> mesmo padrão: cara jovem, perdido em informação contraditória, tentando coisa aleatória. Ele
+> transformou os critérios da prática clínica num sistema.
+
+(~38 palavras → 16s.)
+
+Cena: b-roll não identificável — caderno, caneta, mãos, luz de janela. Nunca fotografia de
+paciente. Se houver imagem liberada do próprio Dr Gama, use ela: vai performar melhor.
+
+---
+
+## Ordem de produção (ajustada ao custo real)
+
+1. **V5 primeiro.** Sem avatar, ~1 crédito, no ar hoje.
+2. **Estáticos** (`03-image-ads.md`) para descobrir qual ângulo tem tração — ~0,03 cada.
+3. **Só então** monte as character sheets (`02-avatars.md`) do ângulo vencedor.
+4. Gere o hero still, **aprove**, e produza **um** clipe Seedance de teste antes de fechar a
+   série inteira. ~576 créditos é caro demais para descobrir problema de direção no clipe 6.
+5. Costure os beats com `ffmpeg`, queime legendas com a skill `caption-video`.
+6. Publique via `meta-ad-builder` — todo anúncio nasce PAUSADO.
+
+## Portões obrigatórios da skill
+
+A skill exige, antes de qualquer geração:
+
+- **Portão de diálogo** — apresentar as falas numeradas por beat e esperar `yes` explícito.
+- **Portão de custo** — mostrar o total estimado com a fonte, e esperar confirmação.
+- **Pasta da sessão** — criar/reusar `Arcads API - YYYY-MM-DD` e passar `projectId` em tudo.
+- **Log** — anexar cada chamada em `logs/arcads-api.jsonl` (sem prompt completo, sem chaves).
+
+## Checagem de conformidade antes de publicar
+
+- [ ] Nenhum antes/depois em nenhum frame
+- [ ] Nenhuma nota ou score dito ou mostrado
+- [ ] Nenhuma frase que afirme defeito no espectador
+- [ ] Nenhuma promessa de resultado físico ou prazo
+- [ ] Legendas em pt-BR com acentuação correta
+- [ ] Nenhuma foto de paciente ou material clínico real

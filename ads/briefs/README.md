@@ -9,6 +9,7 @@ sent to the Arcads API — these are the inputs for when you do.
 | `02-avatars.md` | Avatar specs for the audience, and the character-sheet prompts to build them |
 | `03-image-ads.md` | Template picks from the 37-template library, with variables filled for this offer |
 | `04-ugc-video-scripts.md` | Six UGC scripts with shot direction and model routing |
+| `05-arcads-prompts.md` | Ready-to-fire API payloads — products, character sheets, statics, video |
 
 ## How to run one
 
@@ -27,8 +28,18 @@ sent to the Arcads API — these are the inputs for when you do.
 
 Angles 1 and 2 carry the landing page's own headline and named mechanism, so they are the
 cleanest read on whether the page converts cold traffic. Start there, one angle per ad set,
-static before video — statics are ~0.03 credits versus ~1 for Veo, so you can buy a lot more
-signal for the same spend before committing to a UGC production.
+static before video.
+
+The cost spread makes this non-negotiable. Per `skills/arcads-external-api/reference.md`:
+
+| Asset | Estimated credits |
+|---|---|
+| Nano Banana still | ~0.03 |
+| Sora 2 voiceover, 20s | ~1.0 |
+| **Seedance 2.0 face-locked clip, 15s** | **~720** |
+
+A face-locked UGC clip costs roughly what 24,000 stills cost. Validate the angle on statics
+and text-only video first — see `05-arcads-prompts.md` §8 for the recommended spend order.
 
 ## Three templates you cannot use on this offer
 
