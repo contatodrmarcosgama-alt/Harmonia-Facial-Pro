@@ -10,6 +10,7 @@ sent to the Arcads API — these are the inputs for when you do.
 | `03-image-ads.md` | Template picks from the 37-template library, with variables filled for this offer |
 | `04-ugc-video-scripts.md` | Six UGC scripts with shot direction and model routing |
 | `05-arcads-prompts.md` | Ready-to-fire API payloads — products, character sheets, statics, video |
+| `06-conceito-revelador.md` | Conceito "Cegueira → Revelação" — vídeo abstrato dourado, sem rosto |
 
 ## How to run one
 
