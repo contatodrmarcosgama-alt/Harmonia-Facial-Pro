@@ -5,27 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0B0F14">
-<meta name="supported-color-schemes" content="dark"><link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0B0F14">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Harmonia Pro">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16.png">
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(console.error);
-    });
-  }
-</script>
+<meta name="supported-color-schemes" content="dark">
 <title>Harmonia Facial Pro — Leitura de Proporções</title>
 <meta name="description" content="Leitura educativa das proporções faciais por terços. Sem notas, sem comparações.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ===== PWA: instalar na tela de início e abrir sem barra do navegador ===== -->
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Harmonia Facial Pro">
 <style>
 /* ================= TOKENS ================= */
 :root{
@@ -231,6 +226,26 @@ body.sem-abas .hfp-abas{display:none}
 .hfp-pontos{display:flex;gap:6px;justify-content:center;margin:18px 0 6px}
 .hfp-pontos i{width:5px;height:5px;border-radius:50%;background:var(--hfp-border);display:block;transition:background-color 200ms var(--hfp-ease-out)}
 .hfp-pontos i.on{background:var(--hfp-gold)}
+.hfp-seq{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:2px 0 12px}
+.hfp-seq span{font-size:11.5px;letter-spacing:.04em;color:var(--hfp-text-muted)}
+.hfp-seq i{color:var(--hfp-gold);font-style:normal;font-size:11px}
+.hfp-acc{border-top:1px solid var(--hfp-border)}
+.hfp-acc button{width:100%;background:none;border:none;font-family:inherit;text-align:left;
+  padding:13px 2px;color:var(--hfp-text);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--hfp-border)}
+.hfp-acc button .mais{color:var(--hfp-gold);font-size:15px;line-height:1;transition:transform 200ms var(--hfp-ease-out)}
+.hfp-acc button.on .mais{transform:rotate(45deg)}
+.hfp-acc p{display:none;font-size:13px;color:var(--hfp-text-muted);
+  padding:0 2px 14px;border-bottom:1px solid var(--hfp-border);line-height:1.6}
+.hfp-acc p.on{display:block}
+.hfp-hoje{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;
+  border-bottom:1px solid var(--hfp-border)}
+.hfp-hoje .ok{color:var(--hfp-gold);font-size:13px}
+.hfp-hoje .nao{color:var(--hfp-text-muted);font-size:13px}
+.hfp-ritmo{display:flex;gap:1px;background:var(--hfp-border);border:1px solid var(--hfp-border);margin-top:10px}
+.hfp-ritmo div{flex:1;background:var(--hfp-dark-card);padding:18px 10px;text-align:center}
+.hfp-ritmo b{display:block;font-family:var(--hfp-font-display);font-size:30px;font-weight:300;color:var(--hfp-gold)}
+.hfp-ritmo span{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--hfp-text-muted);margin-top:5px}
 .hfp-etapa{display:flex;align-items:center;gap:13px;padding:15px 14px;background:var(--hfp-dark-card);
   border:1px solid var(--hfp-border);margin-bottom:8px}
 .hfp-etapa .n{width:26px;height:26px;border:1px solid var(--hfp-border);border-radius:50%;
@@ -582,7 +597,8 @@ var PRATICA = {
 var ROTINA = {
   titulo:"Rotina de cuidados",
   intro:"Monte a sequência com os produtos que você já usa. O app organiza a ordem.",
-  limite:"O app organiza a ordem dos seus produtos. Não indica marca, ativo nem tratamento — isso é conversa para o seu dermatologista.",
+  limite:"O app organiza a ordem dos seus produtos. Não indica marcas, ativos, tratamentos ou frequência. Para escolhas específicas sobre sua pele, converse com seu dermatologista.",
+  frase:"Acompanhe sua constância, não sua perfeição.",
   categorias:{
     limpar:{nome:"Limpar",sub:"Preparar a pele"},
     tratar:{nome:"Tratar",sub:"Atender às necessidades específicas"},
@@ -592,11 +608,30 @@ var ROTINA = {
     renovar:{nome:"Renovar",sub:"Esfoliação e máscaras, quando fizer sentido"}
   },
   manha:{nome:"Manhã",etapas:["limpar","tratar","hidratar","proteger"],
-    nota:"A ordem vai do mais fino ao mais espesso. O protetor é sempre o último passo da manhã."},
+    resumo:"A manhã começa preparando a pele e termina com proteção.",
+    botao:"Montar rotina da manhã",
+    nota:"A ordem vai do mais fino ao mais espesso. O protetor é sempre o último passo da manhã.",
+    explica:{
+      limpar:"Remove o que se acumulou na pele durante a noite e prepara a sequência.",
+      tratar:"É o momento dos produtos que você já usa para suas necessidades específicas.",
+      hidratar:"Entra depois do tratamento, mantendo a pele hidratada e em equilíbrio.",
+      proteger:"O protetor solar fecha a sequência da manhã."
+    }},
   noite:{nome:"Noite",etapas:["limpar","tratar","hidratar","relaxar"],
-    nota:"À noite a limpeza retira protetor, poluição e oleosidade do dia. O relaxamento fecha a sequência."},
+    resumo:"A noite encerra o dia e prepara o rosto para o descanso.",
+    botao:"Montar rotina da noite",
+    nota:"À noite a limpeza retira protetor, poluição e oleosidade do dia. O relaxamento fecha a sequência.",
+    explica:{
+      limpar:"Retira protetor solar, poluição e oleosidade acumulados ao longo do dia.",
+      tratar:"É o momento dos produtos que você já usa para suas necessidades específicas.",
+      hidratar:"Mantém a pele hidratada durante a noite.",
+      relaxar:"Fecha a sequência. É aqui que entra a Prática Facial."
+    }},
   complementar:{nome:"Complementar",etapas:["renovar"],
-    nota:"Não é uma etapa diária. A frequência depende da sua pele e de quem acompanha você."},
+    resumo:"Esfoliação e máscaras podem entrar como complemento, quando fizer sentido para você.",
+    botao:"Adicionar complementar",
+    nota:"Não é uma etapa diária. A frequência depende da sua pele e de quem acompanha você.",
+    explica:{renovar:"Esfoliação e máscaras podem entrar como complemento, quando fizer sentido para você."}},
   relaxarLeva:"Esta etapa abre a rotina da noite na Prática Facial."
 };
 
@@ -1310,53 +1345,100 @@ var APP = (function(){
   function hojeStr(){ return diaLocal(new Date()); }
 
   function rotinaHome(){
-    var g=GUARDA.ler(), R=ROTINA;
-    function cartao(chave){
-      var m=R[chave], preench=0;
-      m.etapas.forEach(function(e){ if(e==='relaxar' || g[chave+':'+e]) preench++; });
-      var feitos=(g['feito:'+chave+':'+hojeStr()]||[]).length;
-      return '<div class="hfp-rotina" onclick="APP.rotinaMomento(\''+chave+'\')" style="text-align:left;padding:18px 16px">'+
-        '<b style="text-align:left">'+m.nome+'</b>'+
-        '<span style="text-align:left">'+m.etapas.map(function(e){return R.categorias[e].nome}).join(' · ')+'</span>'+
-        '<span class="hfp-text-gold" style="text-align:left;margin-top:8px;font-size:11px;letter-spacing:.06em">'+
-        (preench? preench+' de '+m.etapas.length+' preenchidos' : 'Ainda não montada')+
-        (feitos? ' · '+feitos+' hoje' : '')+'</span></div>';
+    var g=GUARDA.ler(), R=ROTINA, hoje=hojeStr();
+
+    // --- contagem: reaproveita as chaves ja existentes, sem logica paralela ---
+    function preenchidos(chave){
+      var n=0; R[chave].etapas.forEach(function(e){ if(e==='relaxar' || g[chave+':'+e]) n++; });
+      return n;
     }
+    function feitosHoje(chave){ return (g['feito:'+chave+':'+hoje]||[]).length; }
+    function completaHoje(chave){ return feitosHoje(chave)===R[chave].etapas.length; }
 
     var sem=0, dias={}, ult7={};
     for(var i=0;i<7;i++) ult7[diaMenos(i)]=true;
     Object.keys(g).forEach(function(k){
       if(k.indexOf('feito:')===0){
-        var dia=k.split(':')[2];
-        if(ult7[dia]) sem++;
-        dias[dia]=true;
+        var partes=k.split(':'), mom=partes[1], dia=partes[2];
+        if((g[k]||[]).length === (R[mom]?R[mom].etapas.length:99)){
+          if(ult7[dia]) sem++;
+          dias[dia]=true;
+        }
       }
     });
     var seguidos=0, ini=dias[diaMenos(0)]?0:1;
     for(var j=ini;j<30;j++){ if(dias[diaMenos(j)]) seguidos++; else break; }
+    var hojeCount=(completaHoje('manha')?1:0)+(completaHoje('noite')?1:0);
+
+    // --- momento com sequencia e explicacoes expansiveis ---
+    function bloco(chave){
+      var m=R[chave], p=preenchidos(chave), f=feitosHoje(chave);
+      var h='<div class="hfp-secao"><span class="cap">'+m.nome+'</span></div>'+
+        '<div class="hfp-seq">';
+      m.etapas.forEach(function(e,k){
+        h+='<span>'+R.categorias[e].nome+'</span>'+(k<m.etapas.length-1?'<i>→</i>':'');
+      });
+      h+='</div><p class="hfp-text-muted" style="font-size:13px;margin-bottom:12px">'+m.resumo+'</p>'+
+         '<div class="hfp-acc">';
+      m.etapas.forEach(function(e){
+        var id=chave+'-'+e;
+        h+='<button onclick="APP.rotinaExplica(\''+id+'\',this)">'+R.categorias[e].nome+
+           '<span class="mais">+</span></button><p id="exp-'+id+'">'+m.explica[e]+'</p>';
+      });
+      h+='</div>'+
+        '<button class="hfp-btn hfp-btn2" style="margin-top:14px" onclick="APP.rotinaMomento(\''+chave+'\')">'+m.botao+'</button>'+
+        '<p class="hfp-text-gold" style="font-size:11px;letter-spacing:.06em;text-align:center;margin-top:8px">'+
+        p+' de '+m.etapas.length+' preenchidos'+(f?' · '+f+' hoje':'')+'</p>';
+      return h;
+    }
 
     var h='<div class="hfp-secao" style="margin-top:0"><span class="cap">Sua rotina</span></div>'+
       '<h1 class="hfp-display" style="font-size:27px;margin:8px 0 10px">'+R.titulo+'</h1>'+
       '<p class="hfp-sub">'+R.intro+'</p>'+
-      '<div class="hfp-rotinas">'+cartao('manha')+cartao('noite')+'</div>'+
-      '<div onclick="APP.rotinaMomento(\'complementar\')" class="hfp-card hfp-card-interactive">'+
-      '<div class="hfp-radio" style="border-radius:2px"></div><div><div style="font-weight:500;font-size:14px">'+
-      R.complementar.nome+'</div><div class="hfp-text-muted" style="font-size:12.5px">'+
-      R.categorias.renovar.sub+'</div></div></div>';
+      bloco('manha')+
+      '<div style="height:26px"></div>'+
+      bloco('noite');
 
-    if(sem){
-      h+='<div class="hfp-card" style="margin-top:16px">'+
-         '<div class="hfp-secao" style="margin-top:0"><span class="cap">Esta semana</span></div>'+
-         '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--hfp-border)">'+
-         '<span class="hfp-text-muted" style="font-size:13px">Sequências cumpridas</span>'+
-         '<span class="hfp-text-gold" style="font-size:18px;font-weight:600">'+sem+'</span></div>'+
-         '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0">'+
-         '<span class="hfp-text-muted" style="font-size:13px">Dias seguidos</span>'+
-         '<span class="hfp-text-gold" style="font-size:18px;font-weight:600">'+seguidos+'</span></div></div>';
-    }
-    h+='<p class="hfp-nota" style="margin-top:18px">'+R.limite+'</p>';
+    // --- HOJE ---
+    h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Hoje</span></div>'+
+      '<h2 class="hfp-display" style="font-size:20px;margin:6px 0 6px">Sua rotina de hoje</h2>'+
+      '<div class="hfp-hoje"><span style="font-size:14px">Manhã</span>'+
+      (completaHoje('manha')?'<span class="ok">✓ Concluída</span>':'<span class="nao">Ainda não concluída</span>')+'</div>'+
+      '<div class="hfp-hoje"><span style="font-size:14px">Noite</span>'+
+      (completaHoje('noite')?'<span class="ok">✓ Concluída</span>':'<span class="nao">Ainda não concluída</span>')+'</div>'+
+      '<p class="hfp-text-muted" style="font-size:13px;margin-top:12px">'+
+      hojeCount+(hojeCount===1?' sequência cumprida hoje':' sequências cumpridas hoje')+'</p>';
+
+    // --- ESTA SEMANA ---
+    h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Esta semana</span></div>'+
+      '<h2 class="hfp-display" style="font-size:20px;margin:6px 0 4px">Seu ritmo</h2>'+
+      '<div class="hfp-ritmo">'+
+      '<div><b>'+sem+'</b><span>'+(sem===1?'Sequência cumprida':'Sequências cumpridas')+'</span></div>'+
+      '<div><b>'+seguidos+'</b><span>'+(seguidos===1?'Dia seguido':'Dias seguidos')+'</span></div>'+
+      '</div>'+
+      '<p class="hfp-text-muted" style="font-size:13px;margin-top:12px">'+R.frase+'</p>';
+
+    // --- COMPLEMENTAR ---
+    var c=R.complementar;
+    h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Complementar</span></div>'+
+      '<h2 class="hfp-display" style="font-size:20px;margin:6px 0 6px">'+R.categorias.renovar.nome+'</h2>'+
+      '<p class="hfp-text-muted" style="font-size:13px">'+c.resumo+'</p>'+
+      '<button class="hfp-btn hfp-btn2" style="margin-top:14px" onclick="APP.rotinaMomento(\'complementar\')">'+c.botao+'</button>';
+
+    // --- OBSERVACAO ---
+    h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Uma observação</span></div>'+
+      '<p class="hfp-nota" style="margin-top:8px">'+R.limite+'</p>';
+
     document.getElementById('rotina').innerHTML=h;
     ir('t9');
+  }
+
+  function rotinaExplica(id,botao){
+    var p=document.getElementById('exp-'+id);
+    if(!p) return;
+    var aberto=p.classList.contains('on');
+    p.classList.toggle('on',!aberto);
+    botao.classList.toggle('on',!aberto);
   }
 
   function rotinaMomento(chave){
@@ -1684,9 +1766,18 @@ var APP = (function(){
           aba:aba,voltarChrome:voltarChrome,abrirRotina:abrirRotina,aceitar:aceitar,iniciarRotina:iniciarRotina,comecar:comecar,
           passo:passo,timer:timer,registrar:registrar,lamina:lamina,
           salvarImagem:salvarImagem,whatsapp:whatsapp,
-          rotinaHome:rotinaHome,rotinaMomento:rotinaMomento,rotinaEditar:rotinaEditar,
+          rotinaHome:rotinaHome,rotinaMomento:rotinaMomento,rotinaExplica:rotinaExplica,rotinaEditar:rotinaEditar,
           rotinaSalvar:rotinaSalvar,rotinaMarcar:rotinaMarcar,rotinaConcluir:rotinaConcluir};
 })();
 </script>
+<script>
+/* ===== Service worker: registra em silencio, sem quebrar se falhar ===== */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){ /* segue sem cache */ });
+  });
+}
+</script>
+
 </body>
 </html>
