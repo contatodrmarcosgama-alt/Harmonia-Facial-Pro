@@ -309,6 +309,36 @@ body.sem-abas .hfp-abas{display:none}
   .hfp-secao .cap,.cap{ font-size:8pt!important; letter-spacing:.12em!important }
 }
 
+
+/* Sete regras recuperadas: existiam antes, foram apagadas por engano numa edicao anterior
+   (a mesma que levou as funcoes rotinaHome etc). Confirmado por auditoria: classe usada
+   no JS, sem definicao correspondente no CSS. Recriadas identicas ao design original. */
+.hfp-obj{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.hfp-obj div{border:1px solid var(--hfp-border);padding:14px}
+.hfp-obj b{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--hfp-gold);margin-bottom:6px}
+.hfp-obj span{display:block;font-size:13px;color:var(--hfp-text-muted)}
+
+.hfp-frase{font-family:var(--hfp-font-display);font-size:21px;font-weight:300;font-style:italic;
+  color:var(--hfp-text);margin:14px 0 6px;line-height:1.35}
+
+.hfp-alerta{list-style:none;margin-top:16px}
+.hfp-alerta li{font-size:14px;color:var(--hfp-text-muted);padding:10px 0 10px 16px;position:relative;border-bottom:1px solid var(--hfp-border);list-style:none}
+.hfp-alerta li::before{content:'';position:absolute;left:0;top:19px;width:5px;height:5px;border-radius:50%;background:var(--hfp-gold)}
+
+.hfp-check{display:flex;gap:12px;align-items:flex-start;padding:15px;border:1px solid var(--hfp-border);
+  background:var(--hfp-dark-card);cursor:pointer;margin-top:14px}
+.hfp-check .bx{width:20px;height:20px;border:1px solid var(--hfp-border);flex-shrink:0;margin-top:1px}
+.hfp-check.on .bx{background:var(--hfp-gold);border-color:var(--hfp-gold)}
+
+.hfp-nota{font-size:12.5px;color:var(--hfp-text-muted);border-left:2px solid var(--hfp-border);
+  padding-left:12px;margin-top:16px}
+
+.hfp-timer{font-family:var(--hfp-font-display);font-size:56px;font-weight:300;color:var(--hfp-gold);
+  text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:6px 0 2px}
+
+.hfp-passos{list-style:none;margin:16px 0}
+.hfp-passos li{font-size:15px;padding:11px 0;border-bottom:1px solid var(--hfp-border);color:var(--hfp-text)}
+.hfp-passos li:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -1408,6 +1438,7 @@ var APP = (function(){
   }
 
   var rotAtual=null, passoAtual=0, tmr=null, emPratica=false;
+  var sessaoRegistroIdx=null; // indice do registro desta sessao; null ate a 1a conclusao; zera a cada nova sessao (comecar())
   var rotMomento=null;
 
   // Datas como texto AAAA-MM-DD montado a partir da data LOCAL.
@@ -1545,7 +1576,7 @@ var APP = (function(){
     document.getElementById('exercicios').innerHTML=h; ir('t8');
   }
 
-  function comecar(){ emPratica=true; passoAtual=0; renderPasso(); }
+  function comecar(){ emPratica=true; passoAtual=0; sessaoRegistroIdx=null; renderPasso(); }
 
   function renderPasso(){
     pararTimer();
@@ -1617,8 +1648,17 @@ var APP = (function(){
   }
 
   function registrar(i,el){
+    // Uma sessao de pratica = um registro. Tocar varias vezes na MESMA tela de
+    // conclusao apenas atualiza a percepcao (usa sessaoRegistroIdx, fixado nesta
+    // sessao). Uma sessao NOVA (comecar() de novo, mesmo no mesmo dia e rotina)
+    // sempre soma um registro novo, porque sessaoRegistroIdx foi zerado em comecar().
     var g=GUARDA.ler(); var log=g.pratica||[];
-    log.push({data:hojeStr(),rotina:rotAtual,percepcao:PRATICA.percepcao.ops[i]});
+    if(sessaoRegistroIdx!==null && log[sessaoRegistroIdx]){
+      log[sessaoRegistroIdx].percepcao = PRATICA.percepcao.ops[i];
+    } else {
+      log.push({data:hojeStr(),rotina:rotAtual,percepcao:PRATICA.percepcao.ops[i]});
+      sessaoRegistroIdx = log.length-1;
+    }
     g.pratica=log;
     if(!GUARDA.gravar(g)){
       alert('Não consegui salvar no seu aparelho. O espaço pode estar cheio ou o navegador pode estar bloqueando.');
