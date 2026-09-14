@@ -268,40 +268,47 @@ body.sem-abas .hfp-abas{display:none}
 .hfp-rotina svg{margin-bottom:12px}
 .hfp-rotina b{display:block;font-size:15px;font-weight:500;margin-bottom:3px}
 .hfp-rotina span{display:block;font-size:12px;color:var(--hfp-text-muted)}
-@media print{.lamina{display:block!important}.hfp-pontos{display:none!important}}
-.hfp-timer{font-family:var(--hfp-font-display);font-size:56px;font-weight:300;color:var(--hfp-gold);
-  text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:6px 0 2px}
-.hfp-passos{list-style:none;margin:16px 0}
-.hfp-passos li{font-size:15px;padding:11px 0;border-bottom:1px solid var(--hfp-border);color:var(--hfp-text)}
-.hfp-passos li:last-child{border-bottom:none}
-.hfp-nota{font-size:12.5px;color:var(--hfp-text-muted);border-left:2px solid var(--hfp-border);padding-left:12px;margin-top:16px}
-.hfp-check{display:flex;gap:12px;align-items:flex-start;padding:15px;border:1px solid var(--hfp-border);
-  background:var(--hfp-dark-card);cursor:pointer;margin-top:14px}
-.hfp-check .bx{width:20px;height:20px;border:1px solid var(--hfp-border);flex-shrink:0;margin-top:1px}
-.hfp-check.on .bx{background:var(--hfp-gold);border-color:var(--hfp-gold)}
-.hfp-alerta li{font-size:14px;color:var(--hfp-text-muted);padding:10px 0;border-bottom:1px solid var(--hfp-border);list-style:none}
-.hfp-obj{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
-.hfp-obj div{border:1px solid var(--hfp-border);padding:14px}
-.hfp-obj b{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--hfp-gold);margin-bottom:6px}
-.hfp-obj span{font-size:13px;color:var(--hfp-text-muted)}
-.hfp-frase{font-family:var(--hfp-font-display);font-size:21px;font-weight:300;font-style:italic;
-  color:var(--hfp-text);margin:14px 0 6px;line-height:1.35}
-
-@media (prefers-color-scheme: light){
-  html,body,#root{background:#0B0F14!important;color:#EDEBE7!important}
-}
-
-/* ================= IMPRESSAO ================= */
 @media print{
-  body{background:#fff!important;color:#111!important}
-  #root{max-width:100%!important;padding:0!important}
-  .no-print,.hfp-btn,.hfp-btn-ghost{display:none!important}
-  .hfp-card,.hfp-destaque,.hfp-medida,.hfp-legal{background:#fff!important;border:1px solid #ccc!important;
-    color:#111!important;break-inside:avoid}
-  .hfp-text-primary,.hfp-display,h1,h2,h3,p,span,div,strong,b{color:#111!important}
-  .hfp-text-muted{color:#555!important}
-  .hfp-text-gold,.hfp-secao .cap,.hfp-badge,.hfp-medida .v{color:#8A6D2A!important;border-color:#8A6D2A!important}
+  /* o app e escuro na tela; no papel tudo vira claro e legivel */
+  @page{ margin:14mm 12mm; }
+  html,body,#root,#conteudo,section,div{ background:#fff!important; box-shadow:none!important }
+  html,body{ color:#111!important }
+  #conteudo{ padding:0!important }
+  #root{ max-width:100%!important; margin:0!important }
+
+  /* cromo do app fora do papel */
+  .hfp-topbar,.hfp-abas,.no-print,.hfp-btn,.hfp-btn-ghost,.hfp-pontos,
+  #navLam,.hfp-arte,.hfp-arte-min,.hfp-capa{ display:none!important }
+
+  /* todas as laminas saem juntas */
+  .lamina{ display:block!important; page-break-inside:avoid; break-inside:avoid; margin-bottom:14pt }
+  .tela{ display:none!important }
+  .tela.on{ display:block!important }
+
+  /* texto */
+  *{ color:#111!important; text-shadow:none!important }
+  .hfp-text-muted,.hfp-etapa .prod{ color:#555!important }
+  .hfp-text-gold,.hfp-secao .cap,.cap,.hfp-badge,.hfp-medida .v,.hfp-ritmo b{ color:#8A6D2A!important }
+  .hfp-badge{ border-color:#8A6D2A!important }
+  .hfp-display{ color:#111!important }
+
+  /* blocos */
+  .hfp-card,.hfp-medida,.hfp-etapa{ border:1px solid #ddd!important; padding:10pt!important;
+    margin-bottom:8pt!important; page-break-inside:avoid; break-inside:avoid }
+  .hfp-destaque{ border:none!important; border-left:2pt solid #8A6D2A!important;
+    padding:8pt 0 8pt 10pt!important; page-break-inside:avoid; break-inside:avoid }
+  .hfp-legal{ border:1px solid #ddd!important; padding:10pt!important }
+  .hfp-autoridade{ border-top:1px solid #ddd!important; padding-top:10pt!important;
+    page-break-inside:avoid; break-inside:avoid }
+  .hfp-header{ border-bottom:1px solid #ddd!important; padding-bottom:8pt!important; margin-bottom:10pt!important }
+
+  /* tipografia de papel */
+  h1,h2,h3{ page-break-after:avoid; break-after:avoid }
+  h1{ font-size:20pt!important } h2{ font-size:15pt!important } h3{ font-size:13pt!important }
+  p,li,span,div{ font-size:10.5pt!important; line-height:1.5!important }
+  .hfp-secao .cap,.cap{ font-size:8pt!important; letter-spacing:.12em!important }
 }
+
 </style>
 </head>
 <body>
@@ -1192,8 +1199,6 @@ var APP = (function(){
       '<h2 class="hfp-display" style="font-size:24px;margin:10px 0 22px">Por onde você quer seguir</h2>'+
       '<button class="hfp-btn" onclick="APP.exercicios()">Começar minha Prática Facial</button>'+
       '<div style="height:10px"></div>'+
-      '<button class="hfp-btn hfp-btn2" onclick="APP.salvarImagem()">Salvar como imagem</button>'+
-      '<div style="height:10px"></div>'+
       '<button class="hfp-btn hfp-btn2" onclick="window.print()">Salvar minha análise em PDF</button>'+
       '<div style="height:10px"></div>'+
       '<button class="hfp-btn hfp-btn2" onclick="APP.whatsapp()">Tirar dúvidas com o especialista</button>';
@@ -1228,126 +1233,10 @@ var APP = (function(){
   }
   function lamina(d){ lamAtual=Math.max(0,Math.min(LAMINAS.length-1,lamAtual+d)); navLaminas(); }
 
-  // Gera um cartao da analise em imagem (1080x1350) para salvar na galeria ou compartilhar.
-  // Sem biblioteca externa: tudo desenhado no canvas.
-  function salvarImagem(){
-    var e=ESTADO.obter(), res=ULTIMO_RESULTADO;
-    if(!res) return;
-    var W=1080,H=1350;
-    var c=document.createElement('canvas'); c.width=W; c.height=H;
-    var x=c.getContext('2d');
-
-    x.fillStyle='#0B0F14'; x.fillRect(0,0,W,H);
-
-    var foto=document.getElementById('foto2');
-    var temFoto = foto && foto.src && foto.src.indexOf('data:')===0 && res.proporcoes;
-
-    function desenhar(){
-      // cabecalho
-      x.fillStyle='#C6A969'; x.font='500 22px Inter, sans-serif';
-      x.textAlign='center'; x.letterSpacing='6px';
-      x.fillText('HARMONIA FACIAL PRO', W/2, 88);
-      x.strokeStyle='#25292E'; x.lineWidth=1;
-      x.beginPath(); x.moveTo(70,124); x.lineTo(W-70,124); x.stroke();
-
-      // titulo
-      x.fillStyle='#EDEBE7'; x.letterSpacing='0px';
-      x.font='300 54px "Cormorant Garamond", Georgia, serif';
-      x.fillText('Leitura de Proporções', W/2, 196);
-
-      var topo=250;
-      if(temFoto){
-        // foto em preto e branco com a malha dos tercos
-        var fw=430, fh=Math.round(fw*4/3), fx=(W-fw)/2, fy=topo;
-        x.save(); x.filter='grayscale(100%) contrast(108%)';
-        x.drawImage(foto,fx,fy,fw,fh); x.restore();
-        x.strokeStyle='rgba(198,169,105,.9)'; x.lineWidth=1.4;
-        [0.16,0.40,0.66,0.90].forEach(function(k){
-          var yy=fy+fh*k; x.beginPath(); x.moveTo(fx-24,yy); x.lineTo(fx+fw+24,yy); x.stroke();
-        });
-        x.strokeStyle='#25292E'; x.lineWidth=1; x.strokeRect(fx,fy,fw,fh);
-        topo = fy+fh+64;
-      } else { topo = 300; }
-
-      // tres proporcoes
-      if(res.proporcoes){
-        var rot=['Superior','Médio','Inferior'];
-        var val=[res.proporcoes.superior,res.proporcoes.medio,res.proporcoes.inferior];
-        var col=W/3;
-        for(var i=0;i<3;i++){
-          var cx=col*i+col/2;
-          x.fillStyle='#938E89'; x.font='400 20px Inter, sans-serif'; x.letterSpacing='2px';
-          x.fillText(rot[i].toUpperCase(), cx, topo);
-          x.fillStyle='#C6A969'; x.font='300 56px "Cormorant Garamond", Georgia, serif'; x.letterSpacing='0px';
-          x.fillText((val[i]*100).toFixed(1)+'%', cx, topo+62);
-        }
-        topo += 118;
-      }
-
-      x.strokeStyle='#25292E'; x.lineWidth=1;
-      x.beginPath(); x.moveTo(120,topo); x.lineTo(W-120,topo); x.stroke();
-      topo += 62;
-
-      // ponto forte e ponto de maior potencial
-      function bloco(rotulo,titulo,y){
-        x.fillStyle='#C6A969'; x.font='600 19px Inter, sans-serif'; x.letterSpacing='4px';
-        x.fillText(rotulo.toUpperCase(), W/2, y);
-        x.fillStyle='#EDEBE7'; x.font='300 40px "Cormorant Garamond", Georgia, serif'; x.letterSpacing='0px';
-        return quebra(titulo, W/2, y+52, W-200, 46);
-      }
-      function quebra(txt,cx,y,max,lh){
-        var ps=txt.split(' '), linha='', yy=y;
-        for(var i=0;i<ps.length;i++){
-          var teste=linha?linha+' '+ps[i]:ps[i];
-          if(x.measureText(teste).width>max && linha){ x.fillText(linha,cx,yy); linha=ps[i]; yy+=lh; }
-          else linha=teste;
-        }
-        x.fillText(linha,cx,yy); return yy+lh;
-      }
-
-      if(res.ponto_forte) topo = bloco('Ponto forte dominante', res.ponto_forte.titulo, topo) + 34;
-      var alvo = res.ponto_potencial || res.equilibrio || res.sem_medicao;
-      if(alvo) topo = bloco('Ponto de maior potencial', alvo.titulo, topo) + 10;
-
-      // rodape
-      x.fillStyle='#938E89'; x.font='400 21px Inter, sans-serif'; x.letterSpacing='0px';
-      x.fillText('Leitura educativa de proporções faciais.', W/2, H-116);
-      x.fillText('Não é exame nem laudo.', W/2, H-84);
-      x.fillStyle='#C6A969'; x.font='500 20px Inter, sans-serif'; x.letterSpacing='4px';
-      x.fillText('DR. MARCOS GAMA', W/2, H-40);
-
-      entregar(c);
-    }
-
-    if(temFoto && !foto.complete){ foto.onload=desenhar; } else { desenhar(); }
-  }
-
-  function entregar(canvas){
-    canvas.toBlob(function(blob){
-      if(!blob) return;
-      var arquivo=new File([blob],'harmonia-facial-pro.jpg',{type:'image/jpeg'});
-      if(navigator.canShare && navigator.canShare({files:[arquivo]})){
-        navigator.share({files:[arquivo]}).catch(function(){ baixar(canvas); });
-      } else { baixar(canvas); }
-    },'image/jpeg',0.92);
-  }
-
-  function baixar(canvas){
-    var a=document.createElement('a');
-    a.href=canvas.toDataURL('image/jpeg',0.92);
-    a.download='harmonia-facial-pro.jpg';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  }
-
   /* ================= ROTINA DE CUIDADOS ================= */
-  var rotMomento=null;
-
-  function hojeStr(){ return diaLocal(new Date()); }
-
   function rotinaHome(){
     var g=GUARDA.ler(), R=ROTINA, hoje=hojeStr();
 
-    // --- contagem: reaproveita as chaves ja existentes, sem logica paralela ---
     function preenchidos(chave){
       var n=0; R[chave].etapas.forEach(function(e){ if(e==='relaxar' || g[chave+':'+e]) n++; });
       return n;
@@ -1370,7 +1259,6 @@ var APP = (function(){
     for(var j=ini;j<30;j++){ if(dias[diaMenos(j)]) seguidos++; else break; }
     var hojeCount=(completaHoje('manha')?1:0)+(completaHoje('noite')?1:0);
 
-    // --- momento com sequencia e explicacoes expansiveis ---
     function bloco(chave){
       var m=R[chave], p=preenchidos(chave), f=feitosHoje(chave);
       var h='<div class="hfp-secao"><span class="cap">'+m.nome+'</span></div>'+
@@ -1399,7 +1287,6 @@ var APP = (function(){
       '<div style="height:26px"></div>'+
       bloco('noite');
 
-    // --- HOJE ---
     h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Hoje</span></div>'+
       '<h2 class="hfp-display" style="font-size:20px;margin:6px 0 6px">Sua rotina de hoje</h2>'+
       '<div class="hfp-hoje"><span style="font-size:14px">Manhã</span>'+
@@ -1409,7 +1296,6 @@ var APP = (function(){
       '<p class="hfp-text-muted" style="font-size:13px;margin-top:12px">'+
       hojeCount+(hojeCount===1?' sequência cumprida hoje':' sequências cumpridas hoje')+'</p>';
 
-    // --- ESTA SEMANA ---
     h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Esta semana</span></div>'+
       '<h2 class="hfp-display" style="font-size:20px;margin:6px 0 4px">Seu ritmo</h2>'+
       '<div class="hfp-ritmo">'+
@@ -1418,14 +1304,12 @@ var APP = (function(){
       '</div>'+
       '<p class="hfp-text-muted" style="font-size:13px;margin-top:12px">'+R.frase+'</p>';
 
-    // --- COMPLEMENTAR ---
     var c=R.complementar;
     h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Complementar</span></div>'+
       '<h2 class="hfp-display" style="font-size:20px;margin:6px 0 6px">'+R.categorias.renovar.nome+'</h2>'+
       '<p class="hfp-text-muted" style="font-size:13px">'+c.resumo+'</p>'+
       '<button class="hfp-btn hfp-btn2" style="margin-top:14px" onclick="APP.rotinaMomento(\'complementar\')">'+c.botao+'</button>';
 
-    // --- OBSERVACAO ---
     h+='<div class="hfp-secao" style="margin-top:30px"><span class="cap">Uma observação</span></div>'+
       '<p class="hfp-nota" style="margin-top:8px">'+R.limite+'</p>';
 
@@ -1514,7 +1398,6 @@ var APP = (function(){
     var R=ROTINA, m=R[rotMomento], g=GUARDA.ler();
     g['feito:'+rotMomento+':'+hojeStr()]=m.etapas.slice();
     GUARDA.gravar(g);
-    if(rotMomento==='noite'){ rotAtual='noite'; }
     rotinaHome();
   }
 
@@ -1525,6 +1408,7 @@ var APP = (function(){
   }
 
   var rotAtual=null, passoAtual=0, tmr=null, emPratica=false;
+  var rotMomento=null;
 
   // Datas como texto AAAA-MM-DD montado a partir da data LOCAL.
   // new Date('2026-08-20') seria lido como UTC e, no Brasil, cairia no dia anterior.
@@ -1534,9 +1418,10 @@ var APP = (function(){
   function diaMenos(n){
     var d=new Date(); d.setDate(d.getDate()-n); return diaLocal(d);
   }
+  function hojeStr(){ return diaLocal(new Date()); }
 
   function resumoConstancia(){
-    var praticas=(ESTADO.obter().pratica)||[];
+    var praticas=GUARDA.ler().pratica||[];
     if(!praticas.length) return '';
 
     var ultimos7={}, dias={}, manha=0, noite=0, percep={};
@@ -1732,9 +1617,12 @@ var APP = (function(){
   }
 
   function registrar(i,el){
-    var e=ESTADO.obter(); var log=e.pratica||[];
-    log.push({data:new Date().toISOString().slice(0,10),rotina:rotAtual,percepcao:PRATICA.percepcao.ops[i]});
-    ESTADO.set('pratica',log);
+    var g=GUARDA.ler(); var log=g.pratica||[];
+    log.push({data:hojeStr(),rotina:rotAtual,percepcao:PRATICA.percepcao.ops[i]});
+    g.pratica=log;
+    if(!GUARDA.gravar(g)){
+      alert('Não consegui salvar no seu aparelho. O espaço pode estar cheio ou o navegador pode estar bloqueando.');
+    }
     var pais=el.parentNode.querySelectorAll('.hfp-card-interactive');
     for(var k=0;k<pais.length;k++) pais[k].classList.remove('hfp-card-selected');
     el.classList.add('hfp-card-selected');
@@ -1742,7 +1630,7 @@ var APP = (function(){
     // registro simples: total da semana e dias seguidos. Nunca nota, nunca elogio.
     var caixa=document.getElementById('registroFim');
     if(!caixa) return;
-    var todas=(ESTADO.obter().pratica)||[];
+    var todas=GUARDA.ler().pratica||[];
     var semana=0, dias={};
     var ult7={}; for(var i=0;i<7;i++) ult7[diaMenos(i)]=true;
     todas.forEach(function(x){ if(x&&x.data){ if(ult7[x.data]) semana++; dias[x.data]=true; } });
@@ -1765,7 +1653,7 @@ var APP = (function(){
           proximaPergunta:proximaPergunta,voltarPergunta:voltarPergunta,exercicios:exercicios,
           aba:aba,voltarChrome:voltarChrome,abrirRotina:abrirRotina,aceitar:aceitar,iniciarRotina:iniciarRotina,comecar:comecar,
           passo:passo,timer:timer,registrar:registrar,lamina:lamina,
-          salvarImagem:salvarImagem,whatsapp:whatsapp,
+          whatsapp:whatsapp,
           rotinaHome:rotinaHome,rotinaMomento:rotinaMomento,rotinaExplica:rotinaExplica,rotinaEditar:rotinaEditar,
           rotinaSalvar:rotinaSalvar,rotinaMarcar:rotinaMarcar,rotinaConcluir:rotinaConcluir};
 })();
