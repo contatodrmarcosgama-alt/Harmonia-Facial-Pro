@@ -2,7 +2,7 @@
 // Faz o app carregar instantaneamente (cara de aplicativo) e funcionar
 // mesmo com conexão instável, guardando uma cópia local dos arquivos.
 
-const CACHE_NAME = 'hfp-cache-v45';
+const CACHE_NAME = 'hfp-cache-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
