@@ -1267,8 +1267,11 @@ var APP = (function(){
   function rotinaHome(){
     var g=GUARDA.ler(), R=ROTINA, hoje=hojeStr();
 
+    // "Relaxar" nunca pede produto, entao fica fora da conta de preenchidos —
+    // contar ela como "ja preenchida" dava a falsa impressao de algo marcado sem a pessoa ter feito nada.
+    function etapasComProduto(chave){ return R[chave].etapas.filter(function(e){return e!=='relaxar';}); }
     function preenchidos(chave){
-      var n=0; R[chave].etapas.forEach(function(e){ if(e==='relaxar' || g[chave+':'+e]) n++; });
+      var n=0; etapasComProduto(chave).forEach(function(e){ if(g[chave+':'+e]) n++; });
       return n;
     }
     function feitosHoje(chave){ return (g['feito:'+chave+':'+hoje]||[]).length; }
@@ -1306,7 +1309,7 @@ var APP = (function(){
       h+='</div>'+
         '<button class="hfp-btn hfp-btn2" style="margin-top:14px" onclick="APP.rotinaMomento(\''+chave+'\')">'+m.botao+'</button>'+
         '<p class="hfp-text-gold" style="font-size:11px;letter-spacing:.06em;text-align:center;margin-top:8px">'+
-        p+' de '+m.etapas.length+' preenchidos'+(f?' · '+f+' hoje':'')+'</p>';
+        p+' de '+etapasComProduto(chave).length+' preenchidos'+(f?' · '+f+' hoje':'')+'</p>';
       return h;
     }
 
