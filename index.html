@@ -1225,13 +1225,13 @@ var APP = (function(){
     L.push(s6);
 
     /* 7 — ACAO */
-    var s7='<div class="hfp-secao" style="margin-top:0"><span class="cap">Ação</span></div>'+
+    var s7='<div class="no-print"><div class="hfp-secao" style="margin-top:0"><span class="cap">Ação</span></div>'+
       '<h2 class="hfp-display" style="font-size:24px;margin:10px 0 22px">Por onde você quer seguir</h2>'+
       '<button class="hfp-btn" onclick="APP.exercicios()">Começar minha Prática Facial</button>'+
       '<div style="height:10px"></div>'+
       '<button class="hfp-btn hfp-btn2" onclick="window.print()">Salvar minha análise em PDF</button>'+
       '<div style="height:10px"></div>'+
-      '<button class="hfp-btn hfp-btn2" onclick="APP.whatsapp()">Tirar dúvidas com o especialista</button>';
+      '<button class="hfp-btn hfp-btn2" onclick="APP.whatsapp()">Tirar dúvidas com o especialista</button></div>';
     L.push(s7);
 
     LAMINAS=L; lamAtual=0;
@@ -1282,7 +1282,7 @@ var APP = (function(){
     Object.keys(g).forEach(function(k){
       if(k.indexOf('feito:')===0){
         var partes=k.split(':'), mom=partes[1], dia=partes[2];
-        if((g[k]||[]).length === (R[mom]?R[mom].etapas.length:99)){
+        if((mom==='manha'||mom==='noite') && (g[k]||[]).length === R[mom].etapas.length){
           if(ult7[dia]) sem++;
           dias[dia]=true;
         }

@@ -2,7 +2,7 @@
 // Faz o app carregar instantaneamente (cara de aplicativo) e funcionar
 // mesmo com conexão instável, guardando uma cópia local dos arquivos.
 
-const CACHE_NAME = 'hfp-cache-v5';
+const CACHE_NAME = 'hfp-cache-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,7 +11,7 @@ const ASSETS_TO_CACHE = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE.map((u) => new Request(u, { cache: 'reload' }))))
   );
   self.skipWaiting();
 });
